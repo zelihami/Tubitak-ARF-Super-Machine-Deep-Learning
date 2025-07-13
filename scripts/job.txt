@@ -1,0 +1,67 @@
+#!/bin/bash
+
+#SBATCH --job-name=lightning_fsdp_ddp
+#SBATCH --output=./out/%x.%j.out # Note: %x == job-name
+#SBATCH --error=./out/%x.%j.err # %j == job_id
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --gpus-per-node=4
+#SBATCH --cpus-per-task=10
+#SBATCH --time=0-23:00:00
+#SBATCH --partition=akya-cuda
+#SBATCH --account=egitim
+#SBATCH --reservation=yzup-ders
+
+# Çıktı klasörünü oluştur
+mkdir -p ./out
+
+# Gerekli modülü yükle
+module load apps/truba-ai/gpu-2024.0
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+
+# --- Deney Parametreleri ---
+EPOCHS=10
+GPUS=$SLURM_GPUS_PER_NODE
+NODES=$SLURM_NNODES
+
+declare -a strategies=("fsdp" "ddp")
+declare -a optimizers=("sgd" "adam" "rmsprop")
+declare -a batch_sizes=(32 128 512)
+declare -a learning_rates=(0.01 0.001)
+declare -a schedulers=("steplr" "cosine" "none")
+
+
+# Hiperparametre tarama döngüsü
+for strategy in "${strategies[@]}"; do
+    for optimizer in "${optimizers[@]}"; do
+        for batch_size in "${batch_sizes[@]}"; do
+            for lr in "${learning_rates[@]}"; do
+                for scheduler in "${schedulers[@]}"; do
+
+                    echo "--- RUNNING EXPERIMENT ---"
+                    echo "Strategy: $strategy, Optimizer: $optimizer, Batch: $batch_size, LR: $lr, Scheduler: $scheduler"
+
+                    # Python betiğini srun ile çalıştır
+                    srun python3 lightning_cifar100.py \
+                        --gpus=$GPUS \
+                        --nodes=$NODES \
+                        --epochs=$EPOCHS \
+                        --accelerator="gpu" \
+                        --batch_size=$batch_size \
+                        --strategy=$strategy \
+                        --optimizer=$optimizer \
+                        --learning_rate=$lr \
+                        --scheduler=$scheduler
+
+                    echo "--- EXPERIMENT FINISHED ---"
+                    echo ""
+
+                done
+            done
+        done
+    done
+done
+
+echo "All experiments completed."
+exit
+
