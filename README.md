@@ -1,27 +1,40 @@
-# CIFAR10 Paralel Eğitim Projesi 
+# CIFAR-10 Parallel Training Project
 
-Bu proje, CIFAR10 veri seti üzerinde çeşitli paralelleştirme stratejilerini karşılaştırarak farklı derin öğrenme modellerinin performansını analiz etmeyi amaçlamaktadır.
-Eğitimler, ARF süper bilgisayarı üzerinde gerçekleştirilmiştir.
+This project aims to analyze the performance of various deep learning models on the **CIFAR-10** dataset by comparing different **parallelization strategies**. All experiments were conducted on the **ARF Supercomputer** using distributed training techniques.
 
+## Infrastructure
 
-Kullanılan Altyapı
+- **System**: ARF Supercomputer  
+- **Job Scheduler**: SLURM  
+- **GPUs**: NVIDIA A100 and V100  
+- **CPUs**: 10-core and 20-core configurations  
+- **Partitions**: `akya-cuda`, `barbun-cuda`  
+- **Distributed Training**: PyTorch Lightning with FSDP / DDP support  
 
-- Sistem: ARF Süper Bilgisayarı
-- Yönetim Sistemi: SLURM
-- GPU: NVIDIA A100 ve V100
-- CPU: 10 ve 20
-- Partition: akya-cuda, barbun-cuda
-- Dağıtık Eğitim: PyTorch Lightning + FSDP / DDP
+## Experimental Settings
 
-# Deneysel Ayarlar
+The following combinations of training parameters were tested to evaluate performance under different scenarios:
 
-Aşağıdaki parametre kombinasyonları test edilmiştir:
+- **Batch Sizes**: 32, 128, 512  
+- **Optimizers**: SGD, Adam, RMSprop  
+- **Learning Rates**: 0.01, 0.001  
+- **Schedulers**: None, StepLR, CosineAnnealingLR  
+- **Number of GPUs**: 2, 4  
+- **Epochs**: 10  
 
-- Batch Size: 32, 128, 512
-- Optimizer: SGD, Adam, RMSprop
-- Learning Rate: 0.01, 0.001
-- Scheduler: None, StepLR, CosineAnnealingLR
-- GPU Sayısı: 2, 4
-- Epoch: 10 
+## Project Goals
 
-## Detaylı sonuç raporu results klasörü altında bulunmaktadır.
+- Evaluate training speed and GPU/CPU utilization across parallel setups  
+- Compare optimizer and scheduler impacts under different batch sizes  
+- Demonstrate distributed training using PyTorch Lightning (FSDP and DDP)  
+- Benchmark training time, accuracy, and scalability on a national HPC system  
+
+## Results
+
+Detailed experiment logs, training curves, and metric-based comparisons can be found in the `results/` directory. These reports include:
+
+- Training/validation accuracy and loss plots  
+- Resource usage summaries  
+- Per-configuration result summaries  
+
+All SLURM job submission scripts used for parallel training experiments are available in the scripts/ folder. These scripts can be modified to adjust GPU count, partition, model settings, and hyperparameters.
